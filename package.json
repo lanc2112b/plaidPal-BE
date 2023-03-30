@@ -5,7 +5,7 @@
   "main": "listen.js",
   "scripts": {
     "test": "jest",
-    "start": "NODE_ENV=production node listen.js",
+    "start": "node listen.js",
     "dev": "nodemon listen.js"
   },
   "author": "",

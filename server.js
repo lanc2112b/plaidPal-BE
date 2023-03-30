@@ -12,9 +12,12 @@ const {
 const db = require("./db/db");
 const passport = require("passport");
 const session = require("express-session");
-const dotenv = require("dotenv");
+//const dotenv = require("dotenv");
 
-dotenv.config({ path: "./.env.development" });
+//dotenv.config({ path: "./.env.development" });
+require('dotenv').config({
+  path: `${__dirname}/.env.${ENV}`,
+});
 
 require("./config/passport")(passport);
 
