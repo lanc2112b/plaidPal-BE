@@ -15,6 +15,7 @@ const session = require("express-session");
 //const dotenv = require("dotenv");
 
 //dotenv.config({ path: "./.env.development" });
+const ENV = process.env.NODE_ENV || 'development';
 require('dotenv').config({
   path: `${__dirname}/.env.${ENV}`,
 });
