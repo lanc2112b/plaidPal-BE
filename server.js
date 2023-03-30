@@ -12,7 +12,7 @@ const passport = require("passport");
 const session = require("express-session");
 const dotenv = require("dotenv");
 
-dotenv.config({ path: "./config.env" });
+dotenv.config({ path: "./.env.development" });
 
 require("./config/passport")(passport);
 
