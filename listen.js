@@ -7,6 +7,6 @@ require('dotenv').config({
 
 //console.log(`${__dirname}/.env.${ENV}`)
 
-app.listen(process.env.PORT, () => {
-  console.log(`listening on port ${process.env.PORT}`);
+app.listen(4000, () => {                    //process.env.PORT
+  console.log(`listening on port 4000`);//process.env.PORT
 });
