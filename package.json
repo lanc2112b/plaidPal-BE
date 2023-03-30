@@ -2,10 +2,10 @@
   "name": "be-main",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "listen.js",
   "scripts": {
     "test": "jest",
-    "start": "node listen.js",
+    "start": "NODE_ENV=production node listen.js",
     "dev": "nodemon listen.js"
   },
   "author": "",
