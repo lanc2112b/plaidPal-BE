@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-app.use(cors());
+
 
 const User = require("./db/model/UserModel");
 const {
@@ -28,6 +28,7 @@ const {
 } = require("./controllers/controller");
 
 const app = express();
+app.use(cors());
 
 
 app.use(express.json());
