@@ -35,13 +35,11 @@ const configs = {
 
 const configsForLinkTokenCreate = {
   user: { client_user_id: "PlaidPal SandBox Client" },
-  // user: "PlaidPal SandBox Client",
   client_name: "user_good",
   language: "en",
   products: ["transactions"],
   country_codes: ["GB"],
-
-  // redirect_uri: //probably no needed - see notes in quickstart index.js
+  // country_codes: ["ERROR_COUNTRY_CODE"], //for error testing - change with above line
 };
 
 exports.postCreateLink = () => {
@@ -50,10 +48,9 @@ exports.postCreateLink = () => {
       headers: plaidHeaders,
     })
     .then((response) => {
-      return client.linkTokenCreate(configsForLinkTokenCreate)
+      return client
+        .linkTokenCreate(configsForLinkTokenCreate)
         .then((response) => {
-          console.log("linktokencreate worked");
-          console.log(response.data);
           return response.data;
         });
     });
@@ -70,8 +67,9 @@ exports.postTokenExchange = (obj) => {
           { access_token: access_token }
         )
           .then(() => {
-            console.log(returnObj);
+            // console.log(returnObj);
             resolve({ message: "access token added to User DB" });
+            // return({ message: "access token added to User DB" });
           })
           .catch((error) => {
             console.log(error);
@@ -89,12 +87,11 @@ exports.fetchPlaidAccounts = (obj) => {
   return User.find({ googleId: googleId })
     .then((results) => {
       access_token = results[0].access_token;
-      console.log(access_token);
       return access_token;
     })
     .then((access_token) => {
       return client.accountsGet({ access_token }).then((response) => {
-        console.log(response.data.accounts);
+      // return client.accountsGet({ id: "RUBBISH" }).then((response) => { // for error testing
         return new Promise((resolve, reject) => {
           const account_ids = response.data.accounts.map(
             (account) => account.account_id
@@ -107,8 +104,9 @@ exports.fetchPlaidAccounts = (obj) => {
     });
 };
 
-exports.fetchTransactions = (obj) => {
+exports.fetchTransactions = (obj, sort_by = "date", order = "desc") => {
   const { googleId } = obj;
+
   let access_token = "";
   return User.find({ googleId: googleId })
     .then((results) => {
@@ -118,12 +116,86 @@ exports.fetchTransactions = (obj) => {
     .then((access_token) => {
       return client
         .transactionsGet({
-          access_token,
-          start_date: "2020-01-01",
+          access_token: access_token,
+          start_date: "2018-01-01",
+          // start_date: 12345, // error testing code
           end_date: "2022-02-01",
         })
         .then((response) => {
-          return response.data.transactions;
+          let transactions = response.data.transactions;
+
+          if (sort_by === "amount") {
+            transactions.sort((a, b) => {
+              if (order === "asc") {
+                return a.amount - b.amount;
+              } else {
+                return b.amount - a.amount;
+              }
+            });
+          } else if (sort_by === "date") {
+            transactions.sort((a, b) => {
+              if (order === "asc") {
+                return new Date(a.date) - new Date(b.date);
+              } else {
+                return new Date(b.date) - new Date(a.date);
+              }
+            });
+          } else if (sort_by === "name") {
+            transactions.sort((a, b) => {
+              if (order === "asc") {
+                return a.name.localeCompare(b.name);
+              } else {
+                return b.name.localeCompare(a.name);
+              }
+            });
+          }
+
+          return transactions;
+        });
+    });
+};
+
+exports.fetchAllCategories = () => {
+  return client.categoriesGet({}).then((response) => {
+    return response.data.categories;
+  });
+};
+exports.fetchSingleTransactionAndNote = (idObj, provided_transaction_id) => {
+  const { googleId } = idObj;
+  let access_token = "";
+  let returnObj = { transaction: null, note: {} };
+
+  return User.find({ googleId: googleId })
+    .then((results) => {
+      access_token = results[0].access_token;
+      // console.log(results);
+      return access_token;
+    })
+    .then((access_token) => {
+      return client
+        .transactionsGet({
+          access_token: access_token,
+          // access_token: 12345, // error testing
+          start_date: "2018-01-01",
+          end_date: "2022-02-01",
+        })
+        .then((response) => {
+          const transactionObj = response.data.transactions.filter((tran) => {
+            return tran.transaction_id === provided_transaction_id;
+          });
+          returnObj.transaction = transactionObj;
+          return User.find({ googleId: googleId }).then((user) => {
+            const noteForTransaction = user[0].notes.filter(
+              (noteObj) => noteObj.transaction_id === provided_transaction_id
+            )[0];
+            console.log(noteForTransaction);
+            if(noteForTransaction === undefined){
+              returnObj.note = {};
+            } else{
+              returnObj.note = noteForTransaction;
+            }
+            return returnObj;
+          });
         });
     });
 };
